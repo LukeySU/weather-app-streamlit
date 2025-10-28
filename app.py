@@ -1,15 +1,15 @@
-
 import os
 import requests
 import datetime as dt
 import streamlit as st
 
 # === CONFIG ===
-OWM_API_KEY = os.getenv("OWM_API_KEY")# replace/env-var as needed
+OWM_API_KEY = os.getenv("OWM_API_KEY")  # replace/env-var as needed
 API_BASE = "https://api.openweathermap.org/data/2.5"
 DEFAULT_UNITS = "metric"  # 'metric' or 'imperial'
 
 st.set_page_config(page_title="Weather • Streamlit", page_icon="⛅", layout="wide")
+
 
 # --- API helpers ---
 def get_current_weather(city, units=DEFAULT_UNITS, lang="en"):
@@ -18,31 +18,53 @@ def get_current_weather(city, units=DEFAULT_UNITS, lang="en"):
     r.raise_for_status()
     return r.json()
 
+
 def get_forecast(city, units=DEFAULT_UNITS, lang="en"):
     params = {"q": city, "appid": OWM_API_KEY, "units": units, "lang": lang}
     r = requests.get(f"{API_BASE}/forecast", params=params, timeout=20)
     r.raise_for_status()
     return r.json()
 
+
 def condition_key(weather_main: str) -> str:
-    m = (weather_main or '').lower()
-    if "thunder" in m: return "thunderstorm"
-    if "drizzle" in m: return "drizzle"
-    if "rain" in m: return "rain"
-    if "snow" in m: return "snow"
-    if "cloud" in m: return "clouds"
-    if any(x in m for x in ["mist","fog","haze","smoke"]): return "mist"
-    if "clear" in m: return "clear"
+    m = (weather_main or "").lower()
+    if "thunder" in m:
+        return "thunderstorm"
+    if "drizzle" in m:
+        return "drizzle"
+    if "rain" in m:
+        return "rain"
+    if "snow" in m:
+        return "snow"
+    if "cloud" in m:
+        return "clouds"
+    if any(x in m for x in ["mist", "fog", "haze", "smoke"]):
+        return "mist"
+    if "clear" in m:
+        return "clear"
     return "other"
+
 
 def background_css(theme: str) -> str:
     css_map = {
         "clear": {"gradient": "linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"},
         "clouds": {"gradient": "linear-gradient(135deg, #606c88 0%, #3f4c6b 100%)"},
-        "rain": {"gradient": "linear-gradient(135deg, #4b79a1 0%, #283e51 100%)", "animation": "rain"},
-        "drizzle": {"gradient": "linear-gradient(135deg, #5f9ea0 0%, #2f4f4f 100%)", "animation": "rain"},
-        "snow": {"gradient": "linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%)", "animation": "snow"},
-        "thunderstorm": {"gradient": "linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%)", "animation": "rain"},
+        "rain": {
+            "gradient": "linear-gradient(135deg, #4b79a1 0%, #283e51 100%)",
+            "animation": "rain",
+        },
+        "drizzle": {
+            "gradient": "linear-gradient(135deg, #5f9ea0 0%, #2f4f4f 100%)",
+            "animation": "rain",
+        },
+        "snow": {
+            "gradient": "linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%)",
+            "animation": "snow",
+        },
+        "thunderstorm": {
+            "gradient": "linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%)",
+            "animation": "rain",
+        },
         "mist": {"gradient": "linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)"},
         "other": {"gradient": "linear-gradient(135deg, #D7D2CC 0%, #304352 100%)"},
     }
@@ -78,7 +100,9 @@ def background_css(theme: str) -> str:
     }
     .wicon { width: 64px; height: 64px; }
     </style>
-    """.replace("THE_GRADIENT", gradient)
+    """.replace(
+        "THE_GRADIENT", gradient
+    )
 
     rain_css = """
     <style>
@@ -118,14 +142,17 @@ def background_css(theme: str) -> str:
     """
 
     anim_css = ""
-    if anim == "rain": anim_css = rain_css
-    elif anim == "snow": anim_css = snow_css
+    if anim == "rain":
+        anim_css = rain_css
+    elif anim == "snow":
+        anim_css = snow_css
 
     # add a class on root container to trigger overlay
     script = ""
-    if anim in ("rain","snow"):
+    if anim in ("rain", "snow"):
         script = f"<script>const t=window.parent.document.querySelector('.stApp'); if(t) t.classList.add('{anim}');</script>"
     return base_css + anim_css + script
+
 
 def group_forecast_daily(forecast_json):
     # Forecast returns 3-hour steps; aggregate by local day: avg temp, pick mid icon
@@ -142,15 +169,21 @@ def group_forecast_daily(forecast_json):
         e["winds"].append(it["wind"]["speed"])
     out = []
     for d, v in sorted(days.items()):
-        avg_t = sum(v["temps"])/len(v["temps"])
-        avg_w = sum(v["winds"])/len(v["winds"])
-        icon = v["icons"][len(v["icons"])//2]
-        main = v["mains"][len(v["mains"])//2]
-        out.append({"date": d, "temp": avg_t, "icon": icon, "main": main, "wind": avg_w})
+        avg_t = sum(v["temps"]) / len(v["temps"])
+        avg_w = sum(v["winds"]) / len(v["winds"])
+        icon = v["icons"][len(v["icons"]) // 2]
+        main = v["mains"][len(v["mains"]) // 2]
+        out.append(
+            {"date": d, "temp": avg_t, "icon": icon, "main": main, "wind": avg_w}
+        )
     return out[:5]
 
+
 # --- UI ---
-st.markdown("<h1 style='margin-bottom:0'>Weather Forecast</h1><p class='muted'>Type a city to get current conditions and a 5-day outlook.</p>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='margin-bottom:0'>Weather Forecast</h1><p class='muted'>Type a city to get current conditions and a 5-day outlook.</p>",
+    unsafe_allow_html=True,
+)
 
 with st.sidebar:
     st.header("Settings")
@@ -186,9 +219,10 @@ if go:
         humidity = current["main"]["humidity"]
         wind = current["wind"]["speed"]
         city_name = f"{current['name']}, {current['sys'].get('country','')}"
-        unit_letter = 'C' if units=='metric' else 'F'
-        wind_unit = 'm/s' if units=='metric' else 'mph'
-        st.markdown(f"""
+        unit_letter = "C" if units == "metric" else "F"
+        wind_unit = "m/s" if units == "metric" else "mph"
+        st.markdown(
+            f"""
         <div class="glass">
             <div class="inline">
                 <img class="wicon" src="https://openweathermap.org/img/wn/{icon}@2x.png"/>
@@ -205,40 +239,53 @@ if go:
                 💧 {humidity}% &nbsp; · &nbsp; 🌬️ {wind} {wind_unit}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col2:
-        sunr = dt.datetime.utcfromtimestamp(current["sys"]["sunrise"] + current["timezone"]).strftime("%H:%M")
-        suns = dt.datetime.utcfromtimestamp(current["sys"]["sunset"] + current["timezone"]).strftime("%H:%M")
-        st.markdown(f"""
+        sunr = dt.datetime.utcfromtimestamp(
+            current["sys"]["sunrise"] + current["timezone"]
+        ).strftime("%H:%M")
+        suns = dt.datetime.utcfromtimestamp(
+            current["sys"]["sunset"] + current["timezone"]
+        ).strftime("%H:%M")
+        st.markdown(
+            f"""
         <div class="glass">
             <div style="font-weight:600">Sunrise / Sunset</div>
             <div class="inline" style="margin-top:8px">🌅 {sunr} &nbsp; / &nbsp; 🌇 {suns}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col3:
-        vis_km = (current.get('visibility', 0) or 0)/1000
-        st.markdown(f"""
+        vis_km = (current.get("visibility", 0) or 0) / 1000
+        st.markdown(
+            f"""
         <div class="glass">
             <div style="font-weight:600">Coordinates</div>
             <div class="inline" style="margin-top:8px">📍 {current['coord']['lat']:.2f}, {current['coord']['lon']:.2f}</div>
             <div class="muted" style="margin-top:6px">Pressure: {current['main']['pressure']} hPa</div>
             <div class="muted">Visibility: {vis_km:.1f} km</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     st.markdown("### 5-Day Forecast")
     daily = group_forecast_daily(forecast)
     cols = st.columns(len(daily))
-    unit_letter = 'C' if units=='metric' else 'F'
-    wind_unit = 'm/s' if units=='metric' else 'mph'
+    unit_letter = "C" if units == "metric" else "F"
+    wind_unit = "m/s" if units == "metric" else "mph"
     for i, d in enumerate(daily):
         with cols[i]:
             day_name = d["date"].strftime("%a %d %b")
             t = round(d["temp"])
             wind = round(d["wind"], 1)
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div class="day-card">
                 <div style="font-weight:600">{day_name}</div>
                 <img class="wicon" src="https://openweathermap.org/img/wn/{d['icon']}@2x.png"/>
@@ -246,7 +293,9 @@ if go:
                 <div class="muted">{d['main']}</div>
                 <div class="muted">💨 {wind} {wind_unit}</div>
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
 
 else:
     st.info("Enter a city in the left sidebar and press **Show weather**.")
