@@ -1,15 +1,20 @@
-# Streamlit Weather App (Animated)
+# ☁️ Weather App — Streamlit + SRE Touch
 
-A clean weather app built with **Streamlit** using **OpenWeatherMap**.  
-Shows current conditions and a 5–day outlook. The background gradient and subtle animations adapt to the **current** weather (rain/snow/clear/etc.).
+A responsive **weather forecast app** built with [Streamlit](https://streamlit.io) and the [OpenWeatherMap API](https://openweathermap.org/api).  
+Shows current conditions and a 5-day outlook — with dynamic backgrounds, subtle animations, and built-in reliability checks.
 
-## Features
-- City input (no auto geolocation).
-- Current weather with icon, temperature, humidity, wind.
-- Sunrise/sunset, coordinates, pressure, visibility.
-- 5-day aggregated forecast (daily average temperature; icon sampled near mid–day).
-- Dynamic background:
-  - **Rain/Drizzle/Thunderstorm** → rainy overlay animation.
-  - **Snow** → snow overlay animation.
-  - **Clear/Clouds/Mist** → themed gradients.
-- Minimal glassmorphism UI.   
+---
+
+## 🌦️ Features
+
+- 🔍 **City-based search** — live weather data via OpenWeatherMap  
+- 🎨 **Dynamic visuals** — background and icons adapt to the weather  
+- ❄️ **Animated effects** — rain, snow, or sunny gradients  
+- 📈 **Mini observability dashboard** — logs API latency & availability  
+- 🧩 **Error handling** — graceful fallback if the API call fails  
+- ⚙️ **CI/CD ready** — GitHub Actions run lint + smoke tests  
+- 🩺 **SRE-style metrics** — uptime ratio, API status, latency tracking
+
+---
+
+## 🧠 Architecture
